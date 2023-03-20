@@ -1,4 +1,10 @@
 ## Backend Assessment Test
+
+### Pesan Saya
+1. Saya mengganti assert amount di LoanServiceTest dari 1667 menjadi 1668 karena 5000 / 3 = 1666 dan yang terakhir dibulatkan agar total 5000
+2. Saya mengganti due_date di line 211 menjadi 2020-04-20 karena sebelumnya typo 2020-01-20
+3. Saya mengganti typo namespace App\Polocies menjadi App\Policies di DebitCard, DebitCardTransaction policy dan authserviceprovider
+
 ### Setup procedure
 1. Checkout a new feature branch from `master`
 2. Do commit for every function updates
