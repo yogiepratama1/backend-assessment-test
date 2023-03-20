@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use App\Models\Loan;
-use App\Models\ReceivedRepayment;
 use App\Models\User;
+use App\Models\ReceivedRepayment;
+use App\Models\ScheduledRepayment;
+use Illuminate\Support\Facades\DB;
 
 class LoanService
 {
