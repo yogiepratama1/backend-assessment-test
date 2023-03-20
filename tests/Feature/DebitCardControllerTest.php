@@ -46,12 +46,52 @@ class DebitCardControllerTest extends TestCase
 
     public function testCustomerCannotSeeAListOfDebitCardsOfOtherCustomers()
     {
-        // get /debit-cards
+        $otherUser = User::factory()->create();
+        DebitCard::factory()->active()->create([
+            'user_id' => $otherUser->id,
+        ]);
+        DebitCard::factory()->active()->create([
+            'user_id' => $this->user->id
+        ]);
+
+        $response = $this->get('/api/debit-cards');
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            '*' => [
+                'id',
+                'number',
+                'type',
+                'expiration_date',
+                'is_active',
+            ]
+        ]);
+        $response->assertJsonCount(1);
+        $response->assertJsonMissing([
+            'user_id' => $otherUser->id
+        ]);
+        $this->assertDatabaseCount('debit_cards', 2);
     }
 
     public function testCustomerCanCreateADebitCard()
     {
-        // post /debit-cards
+        $response = $this->post('/api/debit-cards', [
+            'type' => 'MasterCard'
+        ]);
+        $response->assertStatus(201);
+        $response->assertJsonStructure([
+            'id',
+            'number',
+            'type',
+            'expiration_date',
+            'is_active',
+        ]);
+        $response->assertJsonFragment([
+            'type' => 'MasterCard'
+        ]);
+        $this->assertDatabaseHas('debit_cards', [
+            'user_id' => $this->user->id,
+            'type' => 'MasterCard',
+        ]);
     }
 
     public function testCustomerCanSeeASingleDebitCardDetails()
