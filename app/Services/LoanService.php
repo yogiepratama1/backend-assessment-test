@@ -65,6 +65,55 @@ class LoanService
      */
     public function repayLoan(Loan $loan, int $amount, string $currencyCode, string $receivedAt): ReceivedRepayment
     {
-        //
+        $receivedRepayment = ReceivedRepayment::create([
+            'loan_id' => $loan->id,
+            'amount' => $amount,
+            'currency_code' => $currencyCode,
+            'received_at' => $receivedAt,
+        ]);
+
+        $scheduledRepayments = $loan->scheduledRepayments()
+            ->where('status', ScheduledRepayment::STATUS_DUE)
+            ->orderBy('due_date', 'asc')
+            ->get();
+
+        $remainingAmount = $amount;
+
+        foreach ($scheduledRepayments as $scheduledRepayment) {
+            if ($remainingAmount == 0) {
+                break;
+            }
+            if ($remainingAmount < $scheduledRepayment->outstanding_amount) {
+                $outstandingAmount = $scheduledRepayment->outstanding_amount - $remainingAmount;
+                $scheduledRepayment->update([
+                    'outstanding_amount' => $outstandingAmount,
+                    'status' => ScheduledRepayment::STATUS_PARTIAL
+                ]);
+                $remainingAmount = 0;
+            } else {
+                $remainingAmount = $remainingAmount - $scheduledRepayment->outstanding_amount;
+                $scheduledRepayment->update([
+                    'outstanding_amount' => 0,
+                    'status' => ScheduledRepayment::STATUS_REPAID
+                ]);
+            }
+        }
+
+        $outstandingAmount = $loan->scheduledRepayments()->sum('outstanding_amount');
+
+        if ($outstandingAmount == 0) {
+            $loan->update([
+                'outstanding_amount' => $outstandingAmount,
+                'status' => Loan::STATUS_REPAID,
+            ]);
+        } else {
+            $loan->update([
+                'outstanding_amount' => $outstandingAmount,
+                'status' => Loan::STATUS_DUE,
+            ]);
+        }
+
+
+        return $receivedRepayment;
     }
 }
