@@ -8,8 +8,6 @@ use App\Models\DebitCard;
 use Laravel\Passport\Passport;
 use App\Models\DebitCardTransaction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Passport\Passport;
-use Tests\TestCase;
 
 class DebitCardTransactionControllerTest extends TestCase
 {
